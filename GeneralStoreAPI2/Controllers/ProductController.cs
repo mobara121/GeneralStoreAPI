@@ -16,18 +16,18 @@ namespace GeneralStoreAPI2.Controllers
 
         // Create new products
         [HttpPost]
-        public async Task<IHttpActionResult> CreateProduct(Product model)
+        public async Task<IHttpActionResult> CreateProduct(Product product)
         {
             // Check to see if the model is found or the request content is right
-            if (model == null)
+            if (product == null)
             {
                 return BadRequest("Your request cannot be empty.");
             }
-
+            product.SKU = GenerateSku(product.Name);
             // Check to see if the model is NOT valid
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid && product.SKU != null)
             {
-                _context.Product.Add(model);
+                _context.Product.Add(product);
                 await _context.SaveChangesAsync();
 
                 return Ok("You added a product and it was securely saved!");
@@ -43,8 +43,13 @@ namespace GeneralStoreAPI2.Controllers
         public async Task<IHttpActionResult> GetAll()
         {
             List<Product> products = await _context.Product.ToListAsync();
-            return Ok(products);
+            if (products.Count != 0)
+            {
+                return Ok(products);
+            }
+            return BadRequest("Your database contains no products.");
         }
+
 
         // Get by SKU
         [Route("api/Product/{SKU}")]
@@ -61,7 +66,7 @@ namespace GeneralStoreAPI2.Controllers
 
         }
         // Update(PUT)
-        //[Route("api/Product/UpdateProduct/{SKU}")]
+        [Route("api/Product/UpdateProduct/{SKU}")]
         [HttpPut]
         public async Task<IHttpActionResult> UpdateProduct([FromUri]string SKU, [FromBody]Product updateProduct)
         {
@@ -88,7 +93,7 @@ namespace GeneralStoreAPI2.Controllers
         }
 
         // Delete(DELETE)
-        
+        [Route("api/Product/DeleteProduct/{SKU}")]
         [HttpDelete]
         public async Task<IHttpActionResult> DeleteProductBySku(string SKU)
         {
@@ -109,6 +114,13 @@ namespace GeneralStoreAPI2.Controllers
             return InternalServerError();
         }
 
+        private string GenerateSku(string productName)
+        {
+            Random random = new Random();
+            var randItemNum = random.Next(0, 1000).ToString();
+            var itemId = new string('0', 3 - randItemNum.Length) + randItemNum;
+            return $"EFA--{productName.Substring(0, 3)} - {itemId}";
+        }
         //[Route("api/Product/GetRandomInt")]
         //public int GetRandomIdInt()
         //{

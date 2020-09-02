@@ -17,15 +17,15 @@ namespace GeneralStoreAPI2.Controllers
 
         //--Create(POST)
         [HttpPost]
-        public async Task<IHttpActionResult> PostCustomer(Customer model)
+        public async Task<IHttpActionResult> PostCustomer(Customer customer)
         {
-            if (model == null)
+            if (customer == null)
             {
                 return BadRequest("Your request body cannot be empty.");
             }
             if (ModelState.IsValid)
             {
-                _context.Customer.Add(model);
+                _context.Customer.Add(customer);
                 await _context.SaveChangesAsync();
 
                 return Ok("You added a customer and it was securely saved!");
